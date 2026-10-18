@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nuvola OS</title>
+
+<style>
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+body { font: 13px Tahoma, Arial, sans-serif; color: #20242b; background: #156b9a; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+
+#desktop {
+  position: absolute; top: 0; right: 0; bottom: 40px; left: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 75% 76%, rgba(246,224,142,.9), transparent 12%),
+    linear-gradient(165deg, transparent 0 50%, rgba(35,145,163,.75) 50.2% 66%, transparent 66.2%),
+    linear-gradient(155deg, transparent 0 59%, rgba(17,110,127,.9) 59.2% 76%, transparent 76.2%),
+    linear-gradient(180deg, #6ac5e1, #b5e4e3 51%, #e2dfaa);
+}
+#desktop:before {
+  content: ""; position: absolute; width: 350px; height: 350px; border-radius: 50%;
+  top: 8%; right: 12%;
+  background: radial-gradient(circle, rgba(255,248,201,.96), rgba(255,244,184,.4) 34%, transparent 70%);
+}
+#desktop:after {
+  content: ""; position: absolute; left: -8%; right: -8%; bottom: -24%; height: 59%;
+  border-radius: 50% 50% 0 0; background: linear-gradient(170deg, #73b86b, #347f55 72%);
+  transform: rotate(-5deg);
+}
+#icons { position: relative; z-index: 1; padding: 14px; width: 100px; }
+.desktop-icon {
+  width: 76px; height: 76px; margin-bottom: 8px; color: white; text-align: center;
+  cursor: pointer; text-shadow: 1px 1px 2px #23313a; padding: 5px;
+}
+.desktop-icon:hover { background: rgba(255,255,255,.2); outline: 1px dotted white; }
+.desktop-icon .emoji { font-size: 30px; display: block; margin-bottom: 4px; }
+
+#taskbar {
+  position: absolute; z-index: 50; left: 0; right: 0; bottom: 0; height: 40px;
+  background: linear-gradient(#d8e7f1, #9db7ca 48%, #829db1);
+  border-top: 2px solid #f4fbff; box-shadow: 0 -1px 4px rgba(0,0,0,.3);
+  display: flex; align-items: center; padding: 3px;
+}
+#startButton {
+  height: 32px; min-width: 92px; border: 2px outset #e7f1f8; border-radius: 3px;
+  background: linear-gradient(#67bd68, #328c3c); color: white;
+  font-weight: bold; text-shadow: 1px 1px #215a28;
+}
+#taskButtons { flex: 1; overflow: hidden; white-space: nowrap; padding: 0 5px; }
+.task-button {
+  height: 29px; min-width: 110px; max-width: 180px; margin-right: 4px;
+  border: 1px solid #71899b; border-radius: 3px; text-align: left;
+  background: linear-gradient(#e8f1f7, #b6c9d7); overflow: hidden;
+}
+#clock { width: 85px; padding: 7px 5px; text-align: center; border-left: 1px solid #71899b; }
+
+#startMenu {
+  display: none; position: absolute; z-index: 60; left: 3px; bottom: 40px;
+  width: 270px; padding: 8px; background: #e5edf3; border: 2px outset #dce8ef;
+  box-shadow: 3px 3px 9px rgba(0,0,0,.4);
+}
+#startMenu h3 { margin: 2px 0 7px; padding: 7px; color: white; background: #286d9e; }
+.menu-item { display: block; width: 100%; text-align: left; padding: 8px; border: 0; background: transparent; }
+.menu-item:hover { background: #c9e2f3; }
+
+.window {
+  position: absolute; z-index: 10; left: 50%; top: 50%; width: 560px; height: 390px;
+  max-width: 95%; max-height: 85%; transform: translate(-50%, -50%);
+  background: #e9eef2; border: 2px solid #e7f3fa; box-shadow: 4px 6px 18px rgba(0,0,0,.45);
+  display: none;
+}
+.titlebar {
+  height: 30px; padding: 5px 6px; color: white; font-weight: bold;
+  background: linear-gradient(90deg, #15568d, #4394c4);
+}
+.close {
+  float: right; margin-top: -3px; width: 23px; height: 22px;
+  border: 1px solid white; background: linear-gradient(#f5a59a, #c93c30);
+  color: white; font-weight: bold;
+}
+.window-body { height: calc(100% - 30px); overflow: auto; padding: 12px; }
+.toolbar { padding: 7px; background: #d8e3eb; border: 1px solid #b7c6d0; margin-bottom: 10px; }
+.file-row { padding: 7px; border-bottom: 1px solid #d5dce1; }
+.file-row span { display: inline-block; width: 28px; }
+.file-name { cursor: pointer; }
+.file-name:hover { text-decoration: underline; color: #15568d; }
+.system-grid { display: table; width: 100%; border-collapse: collapse; }
+.system-row { display: table-row; }
+.system-row div { display: table-cell; border-bottom: 1px solid #c8d2d9; padding: 7px; }
+.system-row div:first-child { font-weight: bold; width: 38%; }
+textarea#noteArea { width: 100%; height: 220px; resize: none; padding: 8px; }
+.calc { width: 240px; margin: auto; }
+#calcDisplay { width: 100%; height: 42px; text-align: right; font-size: 22px; margin-bottom: 5px; }
+.calc-grid { display: table; width: 100%; }
+.calc-row { display: table-row; }
+.calc-row button { display: table-cell; width: 25%; height: 42px; margin: 2px; }
+#terminalText {
+  background: #101820; color: #70ef86; padding: 12px; min-height: 220px;
+  font-family: Consolas, monospace; white-space: pre-wrap;
+}
+.small { color: #52616b; font-size: 11px; }
+@media (max-width: 600px) {
+  .window { width: 96%; height: 82%; }
+  #icons { padding: 7px; }
+}
+</style>
+</head>
+
+<body>
+<div id="desktop">
+  <div id="icons">
+    <div class="desktop-icon" onclick="openApp('files')"><span class="emoji">📁</span>File system</div>
+    <div class="desktop-icon" onclick="openApp('system')"><span class="emoji">⚙️</span>Sistema</div>
+    <div class="desktop-icon" onclick="openApp('notes')"><span class="emoji">📝</span>Blocco note</div>
+    <div class="desktop-icon" onclick="openApp('calculator')"><span class="emoji">🔢</span>Calcolatrice</div>
+  </div>
+</div>
+
+<div id="startMenu">
+  <h3>Nuvola OS</h3>
+  <button class="menu-item" onclick="openApp('files')">📁 File system</button>
+  <button class="menu-item" onclick="openApp('system')">⚙️ Informazioni di sistema</button>
+  <button class="menu-item" onclick="openApp('notes')">📝 Blocco note</button>
+  <button class="menu-item" onclick="openApp('calculator')">🔢 Calcolatrice</button>
+  <button class="menu-item" onclick="openApp('terminal')">▣ Terminale</button>
+</div>
+
+<div id="taskbar">
+  <button id="startButton" onclick="toggleStart()">🌤 Start</button>
+  <div id="taskButtons"></div>
+  <div id="clock"></div>
+</div>
+
+<div class="window" id="win-files">
+  <div class="titlebar">📁 File system <button class="close" onclick="closeApp('files')">×</button></div>
+  <div class="window-body">
+    <div class="toolbar">📍 Questo computer › R:\ (RAM-Disk virtuale)</div>
+    <div id="fileList"></div>
+    <p>
+      <input id="newFileName" type="text" placeholder="Nome file, es. appunti.txt">
+      <button onclick="createFile()">Crea file fittizio</button>
+    </p>
+    <p class="small">
+      Il volume è simulato in memoria volatile. La capienza è 16 MiB; non viene creato
+      alcun file sul disco reale.
+    </p>
+  </div>
+</div>
+
+<div class="window" id="win-system">
+  <div class="titlebar">⚙️ Informazioni di sistema <button class="close" onclick="closeApp('system')">×</button></div>
+  <div class="window-body">
+    <h2>Nuvola OS 1.0</h2>
+    <p>Sistema operativo dimostrativo eseguito nel browser.</p>
+    <div class="system-grid">
+      <div class="system-row"><div>Nome dispositivo</div><div>NUVOLA-DESKTOP</div></div>
+      <div class="system-row"><div>Architettura simulata</div><div>x64 · 64 bit</div></div>
+      <div class="system-row"><div>CPU fittizia</div><div>Nuvola N2 · 2 core / 4 thread · 2,4 GHz</div></div>
+      <div class="system-row"><div>RAM fittizia</div><div>Nuvola Memory M4 · 4 GB DDR4</div></div>
+      <div class="system-row"><div>GPU fittizia</div><div>Nuvola G1 · integrata · 512 MB condivisi</div></div>
+      <div class="system-row"><div>Disco virtuale volatile</div><div>Nuvola RAM-Disk · capienza simulata 16 MiB</div></div>
+      <div class="system-row"><div>File system</div><div>NuvolaFS · simulato in memoria</div></div>
+      <div class="system-row"><div>Estensione eseguibili</div><div>.nxe · solo dimostrativa</div></div>
+      <div class="system-row"><div>Browser</div><div id="browserInfo">Browser web</div></div>
+      <div class="system-row"><div>Spazio usato nel RAM-Disk</div><div id="ramUsage">0 byte / 16 MiB</div></div>
+    </div>
+    <p class="small">
+      I componenti sono specifiche inventate e plausibili per un OS leggero. Il browser
+      non emula davvero CPU, GPU o RAM e non riserva 4 GB.
+    </p>
+  </div>
+</div>
+
+<div class="window" id="win-notes">
+  <div class="titlebar">📝 Blocco note <button class="close" onclick="closeApp('notes')">×</button></div>
+  <div class="window-body">
+    <div class="toolbar">
+      <button onclick="saveNote()">Conserva in RAM</button>
+      <span id="saveStatus">Modifiche non salvate nella memoria simulata.</span>
+    </div>
+    <textarea id="noteArea" placeholder="Scrivi qui..."></textarea>
+    <p class="small">
+      La nota viene conservata solo nella RAM della pagina quando premi “Conserva in RAM”.
+      Chiudendo o ricaricando la pagina, verrà persa. Nessun salvataggio su disco o localStorage.
+    </p>
+  </div>
+</div>
+
+<div class="window" id="win-calculator">
+  <div class="titlebar">🔢 Calcolatrice <button class="close" onclick="closeApp('calculator')">×</button></div>
+  <div class="window-body">
+    <div class="calc">
+      <input id="calcDisplay" type="text" readonly value="0">
+      <div class="calc-grid">
+        <div class="calc-row">
+          <button onclick="calcClear()">C</button><button onclick="calcAdd('/')">÷</button>
+          <button onclick="calcAdd('*')">×</button><button onclick="calcAdd('-')">−</button>
+        </div>
+        <div class="calc-row">
+          <button onclick="calcAdd('7')">7</button><button onclick="calcAdd('8')">8</button>
+          <button onclick="calcAdd('9')">9</button><button onclick="calcAdd('+')">+</button>
+        </div>
+        <div class="calc-row">
+          <button onclick="calcAdd('4')">4</button><button onclick="calcAdd('5')">5</button>
+          <button onclick="calcAdd('6')">6</button><button onclick="calcResult()">=</button>
+        </div>
+        <div class="calc-row">
+          <button onclick="calcAdd('1')">1</button><button onclick="calcAdd('2')">2</button>
+          <button onclick="calcAdd('3')">3</button><button onclick="calcAdd('0')">0</button>
+        </div>
+        <div class="calc-row"><button onclick="calcAdd('.')">.</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="window" id="win-terminal">
+  <div class="titlebar">▣ Terminale Nuvola <button class="close" onclick="closeApp('terminal')">×</button></div>
+  <div class="window-body">
+    <div id="terminalText">Nuvola Shell 1.0
+Digita "help" per i comandi.
+
+</div>
+    <input id="terminalInput" type="text" style="width:100%;padding:8px" placeholder="Comando: help">
+  </div>
+</div>
+
+<script>
+(function () {
+  var CAPACITY_BYTES = 16 * 1024 * 1024;
+
+  /*
+    Questo oggetto è il RAM-Disk simulato.
+    Contiene solo stringhe e metadati JavaScript: nessuna scrittura su disco.
+  */
+  var nuvolaRAM = {
+    note: "",
+    files: [
+      { name: "kernel.nvk", content: "Nucleo dimostrativo di Nuvola OS." },
+      { name: "driver.gpu", content: "Driver grafico virtuale Nuvola G1." },
+      { name: "Benvenuto.nxe", content: "Eseguibile dimostrativo: non eseguibile dal browser." }
+    ]
+  };
+
+  var apps = {
+    files: "win-files",
+    system: "win-system",
+    notes: "win-notes",
+    calculator: "win-calculator",
+    terminal: "win-terminal"
+  };
+  var titles = {
+    files: "📁 File system",
+    system: "⚙️ Sistema",
+    notes: "📝 Blocco note",
+    calculator: "🔢 Calcolatrice",
+    terminal: "▣ Terminale"
+  };
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function byteLength(s) {
+    /* Stima: in JavaScript le stringhe sono UTF-16, circa 2 byte per carattere. */
+    return String(s).length * 2;
+  }
+
+  function usedBytes() {
+    var i, total = byteLength(nuvolaRAM.note);
+    for (i = 0; i < nuvolaRAM.files.length; i++) {
+      total += byteLength(nuvolaRAM.files[i].name);
+      total += byteLength(nuvolaRAM.files[i].content);
+    }
+    return total;
+  }
+
+  function formatBytes(n) {
+    if (n < 1024) return n + " byte";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KiB";
+    return (n / (1024 * 1024)).toFixed(2) + " MiB";
+  }
+
+  function updateUsage() {
+    var used = usedBytes();
+    var el = document.getElementById("ramUsage");
+    if (el) el.innerHTML = formatBytes(used) + " / 16 MiB";
+  }
+
+  function renderFiles() {
+    var box = document.getElementById("fileList");
+    var html = "";
+    var i;
+    for (i = 0; i < nuvolaRAM.files.length; i++) {
+      html += '<div class="file-row"><span>📄</span><span class="file-name" onclick="viewFile(' +
+        i + ')"><b>' + escapeHtml(nuvolaRAM.files[i].name) + '</b></span>' +
+        '<span class="small">File fittizio in RAM</span></div>';
+    }
+    box.innerHTML = html || "<p>Il volume è vuoto.</p>";
+    updateUsage();
+  }
+
+  window.viewFile = function (index) {
+    if (!nuvolaRAM.files[index]) return;
+    window.alert(nuvolaRAM.files[index].name + "\n\n" + nuvolaRAM.files[index].content);
+  };
+
+  window.createFile = function () {
+    var input = document.getElementById("newFileName");
+    var name = input.value.replace(/^\s+|\s+$/g, "");
+    if (!name) { window.alert("Inserisci un nome per il file."); return; }
+
+    var candidate = nuvolaRAM.files.concat([{ name: name, content: "" }]);
+    var total = byteLength(nuvolaRAM.note);
+    var i;
+    for (i = 0; i < candidate.length; i++) {
+      total += byteLength(candidate[i].name) + byteLength(candidate[i].content);
+    }
+    if (total > CAPACITY_BYTES) {
+      window.alert("Spazio esaurito nel RAM-Disk simulato.");
+      return;
+    }
+
+    nuvolaRAM.files.push({ name: name, content: "" });
+    input.value = "";
+    renderFiles();
+  };
+
+  window.openApp = function (name) {
+    var el = document.getElementById(apps[name]);
+    if (!el) return;
+    el.style.display = "block";
+    el.style.zIndex = String(new Date().getTime());
+    document.getElementById("startMenu").style.display = "none";
+    addTaskButton(name);
+    if (name === "files") renderFiles();
+    if (name === "notes") loadNote();
+  };
+
+  window.closeApp = function (name) {
+    document.getElementById(apps[name]).style.display = "none";
+    var b = document.getElementById("task-" + name);
+    if (b && b.parentNode) b.parentNode.removeChild(b);
+  };
+
+  window.toggleStart = function () {
+    var menu = document.getElementById("startMenu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+  };
+
+  function addTaskButton(name) {
+    if (document.getElementById("task-" + name)) return;
+    var b = document.createElement("button");
+    b.className = "task-button";
+    b.id = "task-" + name;
+    b.innerHTML = titles[name];
+    b.onclick = function () {
+      var w = document.getElementById(apps[name]);
+      w.style.display = w.style.display === "none" ? "block" : "none";
+    };
+    document.getElementById("taskButtons").appendChild(b);
+  }
+
+  window.saveNote = function () {
+    var text = document.getElementById("noteArea").value;
+    var total = byteLength(text);
+    var i;
+    for (i = 0; i < nuvolaRAM.files.length; i++) {
+      total += byteLength(nuvolaRAM.files[i].name) + byteLength(nuvolaRAM.files[i].content);
+    }
+    if (total > CAPACITY_BYTES) {
+      document.getElementById("saveStatus").innerHTML = "Spazio simulato esaurito: nota non salvata.";
+      return;
+    }
+    nuvolaRAM.note = text;
+    document.getElementById("saveStatus").innerHTML =
+      "Conservata in RAM simulata · " + formatBytes(usedBytes()) + " usati.";
+    updateUsage();
+  };
+
+  function loadNote() {
+    document.getElementById("noteArea").value = nuvolaRAM.note;
+    document.getElementById("saveStatus").innerHTML = "Nota presente nella RAM simulata.";
+  }
+
+  window.calcAdd = function (v) {
+    var d = document.getElementById("calcDisplay");
+    if (d.value === "0" || d.value === "Errore") d.value = v;
+    else d.value += v;
+  };
+  window.calcClear = function () {
+    document.getElementById("calcDisplay").value = "0";
+  };
+  window.calcResult = function () {
+    var d = document.getElementById("calcDisplay");
+    if (!/^[0-9+\-*/.() ]+$/.test(d.value)) { d.value = "Errore"; return; }
+    try {
+      var result = Function('"use strict"; return (' + d.value + ')')();
+      d.value = isFinite(result) ? String(result) : "Errore";
+    } catch (e) { d.value = "Errore"; }
+  };
+
+  function clock() {
+    var d = new Date();
+    var h = ("0" + d.getHours()).slice(-2);
+    var m = ("0" + d.getMinutes()).slice(-2);
+    document.getElementById("clock").innerHTML = h + ":" + m;
+  }
+  clock();
+  window.setInterval(clock, 1000);
+
+  var ua = navigator.userAgent;
+  document.getElementById("browserInfo").innerHTML =
+    ua.indexOf("Trident") >= 0 ? "Internet Explorer 11" :
+    ua.indexOf("Firefox") >= 0 ? "Mozilla Firefox" :
+    ua.indexOf("Edg") >= 0 ? "Microsoft Edge" :
+    ua.indexOf("Chrome") >= 0 ? "Google Chrome" : "Browser web";
+
+  var input = document.getElementById("terminalInput");
+  input.onkeydown = function (e) {
+    e = e || window.event;
+    if (e.keyCode !== 13) return;
+    var raw = input.value;
+    var cmd = raw.replace(/^\s+|\s+$/g, "").toLowerCase();
+    var out = document.getElementById("terminalText");
+    var answer = "";
+    if (cmd === "help") answer = "Comandi: help, date, system, files, ram, clear";
+    else if (cmd === "date") answer = new Date().toString();
+    else if (cmd === "system") answer = "Nuvola OS 1.0 · Nuvola N2 · 4 GB RAM simulata · Nuvola G1";
+    else if (cmd === "files") answer = "Volume R:\\ (RAM-Disk volatile)\n" + nuvolaRAM.files.length + " file dimostrativi";
+    else if (cmd === "ram") answer = formatBytes(usedBytes()) + " usati su 16 MiB simulati";
+    else if (cmd === "clear") { out.innerHTML = ""; input.value = ""; return; }
+    else if (cmd) answer = "Comando non riconosciuto: " + raw;
+    out.innerHTML += "&gt; " + escapeHtml(raw) + "\n" + escapeHtml(answer) + "\n";
+    input.value = "";
+    out.scrollTop = out.scrollHeight;
+    updateUsage();
+  };
+
+  renderFiles();
+}());
+</script>
+</body>
+</html>
